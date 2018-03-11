@@ -1,5 +1,7 @@
 package rot.simpletrees.model;
 
+import java.util.ArrayList;
+
 public class BinTree <K extends Comparable<K>, V> {	
 
 	static public class Data <K extends Comparable<K>, V> {
@@ -12,40 +14,36 @@ public class BinTree <K extends Comparable<K>, V> {
 		public			V	m_value;
 	}
 
-	static class Node <K extends Comparable<K>, V> {
-		Node(	Data<K, V>	data,
-				Node<K, V>	left,
-				Node<K, V>	right) {
+// --- NODE STUFF ---
+	
+	static class Node<K extends Comparable<K>, V> {
+
+		public Node(BinTree.Data<K, V> data)
+		{
 			m_data = data;
-			m_left = left;
-			m_right = right;
 		}
 
-		Node<K, V>	m_left;
-		Node<K, V>	m_right;
-
-		Data<K, V>	m_data;	
-	}	
+		Data<K, V> m_data;
+		Node<K, V> m_left = null;
+		Node<K, V> m_right = null;
+	}
 	protected Node<K, V> m_root = null;
+	protected Node<K, V> createNode(Data<K, V> data)	
+	{
+		return new Node<K, V>(data);
+	}
+
+// --- END NODE STUFF ---
 
 	static public class CallBack<K extends Comparable<K>, V> {
 		void action(Node<K, V> node) { }
 	}
 
-	// --- constructors
+// --- CTORs ---
 
-	/*
-	public BinTree( Data<K, V>... init ) 
-	{
-		for(Data<K, V> e : init)
-			insert(e);
-	}
-	*/
 	public BinTree() {}
 
-	// --- end ctors
-
-	// ---
+// --- END CTORs ---
 
 	protected Node<K, V> getMinimum(Node<K, V> root)
 	{
@@ -57,22 +55,20 @@ public class BinTree <K extends Comparable<K>, V> {
 		if(root.m_right == null) return root;
 		return getMaximum(root.m_right);
 	}
-	protected Node<K, V> balance(Node<K, V> root)
-	{
-		return root;
-	}
+	protected Node<K, V> balance(Node<K, V> root) { return root; }
 
-// --- user area ---
-	
-// --- base interface ---
+// --- USER INTERFACE ---
 	
 // --- SEARCH --- 
+
 	private Node<K, V> search(K key, Node<K, V> root) 
 	{
 		// рекурсивная реализация
+		if( root == null ) return root;
+
 		int compareResult = key.compareTo(root.m_data.m_key);
 
-		if(root == null || compareResult == 0) return root;
+		if(compareResult == 0) return root;
 		if(compareResult > 0) return search(key, root.m_right);
 		return search(key, root.m_left);
 
@@ -95,13 +91,16 @@ public class BinTree <K extends Comparable<K>, V> {
 		if( node == null ) return null;
 		else return node.m_data;
 	}
+
 // --- END SEATCH ---
 	
 // --- INSERT ---
+
 	private Node<K, V> insert( Data<K, V> data, Node<K, V> root)
 	{
 		if( root == null ) {
-			root = new Node<K, V>(data, null, null);
+			root = createNode(data); 
+			++size;
 			return root;
 		}
 
@@ -115,11 +114,12 @@ public class BinTree <K extends Comparable<K>, V> {
 	public void insert( Data<K, V> data )
 	{
 		m_root = insert( data, m_root );
-		System.out.println("root - "+m_root);
 	}
+
 // --- END INSERT ---
 
 // --- REMOVE ---
+
 	private Node<K, V> remove( K key, Node<K, V> root )
 	{
 		if( root == null ) return root;
@@ -134,28 +134,33 @@ public class BinTree <K extends Comparable<K>, V> {
 				root.m_data = getMinimum(root.m_right).m_data;
 				root.m_right = remove(root.m_data.m_key, root.m_right);
 
-			} else if ( root.m_left != null ) root = root.m_left;		
-			else root = root.m_right;
+			} else {
+				if ( root.m_left != null ) root = root.m_left;		
+				else root = root.m_right;
+				--size;
+				return root;
+			}
 		}
 		
 		return balance(root);
 	}
 	public void remove( K key )
 	{
-		remove( key, m_root );
+		m_root = remove( key, m_root );
 	}
+
 // --- END REMOVE ---
 
 // --- TRAVERSE ---
 
-	private void inorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void inorderTraversal( Node<K, V> root, CallBack<K, V> cb)
 	{
 		if (root == null) return;
 		inorderTraversal(root.m_left, cb);
 		cb.action(root);
 		inorderTraversal(root.m_right, cb);
 	}	
-	private void preorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void preorderTraversal( Node<K, V> root, CallBack<K, V> cb)
 	{
 		if( root == null ) return;
 
@@ -163,7 +168,7 @@ public class BinTree <K extends Comparable<K>, V> {
 		preorderTraversal(root.m_left, cb);
 		preorderTraversal(root.m_right, cb);
 	}
-	private void postorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void postorderTraversal( Node<K, V> root, CallBack<K, V> cb)
 	{
 		if( root == null ) return;
 
@@ -174,17 +179,24 @@ public class BinTree <K extends Comparable<K>, V> {
 
 // --- END TRAVERSE ---
 
-	private void changeCounter( Node<K, V> root, Integer count)
+	private int size;
+
+	public int size()
 	{
-		if (root == null) return;
-		changeCounter(root.m_left, count);
-		++count;
-		changeCounter(root.m_right, count);
+		return size;
 	}
-	public int getNodeCount()
+
+	public ArrayList<Data<K, V>> getDataList()
 	{
-		Integer count = Integer.valueOf(0);
-		changeCounter(m_root, count);
-		return count;
+		ArrayList<Data<K, V>> list = new ArrayList<>();
+		fillDataList(m_root, list);
+		return list;
+	}
+	protected void fillDataList(Node<K, V> root, ArrayList<Data<K,V>> list)
+	{
+		if(root == null) return;
+		fillDataList(root.m_left, list);
+		list.add(root.m_data);
+		fillDataList(root.m_right, list);
 	}
 }
