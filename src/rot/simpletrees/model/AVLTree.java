@@ -10,7 +10,7 @@ public class AVLTree <K extends Comparable<K>, V>
 	static class Node <K extends Comparable<K>, V>
 		extends BinTree.Node<K, V> {
 
-		public Node(BinTree.Data<K, V> data)
+		public Node(Tree.Data<K, V> data)
 		{
 			super(data);
 		}

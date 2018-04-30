@@ -1,34 +1,26 @@
 package rot.simpletrees.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
-public class BinTree <K extends Comparable<K>, V> {	
-
-	static public class Data <K extends Comparable<K>, V> {
-
-		public Data(K key, V value) {
-			m_key = key;
-			m_value = value;
-		}
-		public final	K	m_key;
-		public			V	m_value;
-	}
+public class BinTree <K extends Comparable<K>, V>
+	implements Tree <K, V> {		
 
 // --- NODE STUFF ---
 	
 	static class Node<K extends Comparable<K>, V> {
 
-		public Node(BinTree.Data<K, V> data)
+	public Node(Tree.Data<K, V> data)
 		{
 			m_data = data;
 		}
 
-		Data<K, V> m_data;
+		Tree.Data<K, V> m_data;
 		Node<K, V> m_left = null;
 		Node<K, V> m_right = null;
 	}
 	protected Node<K, V> m_root = null;
-	protected Node<K, V> createNode(Data<K, V> data)	
+	protected Node<K, V> createNode(Tree.Data<K, V> data)	
 	{
 		return new Node<K, V>(data);
 	}
@@ -85,7 +77,9 @@ public class BinTree <K extends Comparable<K>, V> {
 		return root;
 		*/
 	}
-	public Data<K, V> search(K key)
+
+	@Override
+	public Tree.Data<K, V> search(K key)
 	{
 		Node<K, V> node = search(key, m_root);
 		if( node == null ) return null;
@@ -96,7 +90,7 @@ public class BinTree <K extends Comparable<K>, V> {
 	
 // --- INSERT ---
 
-	private Node<K, V> insert( Data<K, V> data, Node<K, V> root)
+	private Node<K, V> insert( Tree.Data<K, V> data, Node<K, V> root)
 	{
 		if( root == null ) {
 			root = createNode(data); 
@@ -111,7 +105,8 @@ public class BinTree <K extends Comparable<K>, V> {
 
 		return balance(root);
 	}
-	public void insert( Data<K, V> data )
+	@Override
+	public void insert( Tree.Data<K, V> data )
 	{
 		m_root = insert( data, m_root );
 	}
@@ -144,6 +139,7 @@ public class BinTree <K extends Comparable<K>, V> {
 		
 		return balance(root);
 	}
+	@Override
 	public void remove( K key )
 	{
 		m_root = remove( key, m_root );
@@ -181,22 +177,28 @@ public class BinTree <K extends Comparable<K>, V> {
 
 	private int size;
 
+	@Override
 	public int size()
 	{
 		return size;
 	}
-
-	public ArrayList<Data<K, V>> getDataList()
+	
+	public ArrayList<Tree.Data<K, V>> getDataList()
 	{
-		ArrayList<Data<K, V>> list = new ArrayList<>();
-		fillDataList(m_root, list);
+		ArrayList<Tree.Data<K, V>> list = new ArrayList<>(size());
+		fillCollection(list);
 		return list;
 	}
-	protected void fillDataList(Node<K, V> root, ArrayList<Data<K,V>> list)
+	protected void fillCollection(Collection<Tree.Data<K, V>> data)
+	{
+		data.clear();
+		fillCollection(m_root, data);
+	}
+	protected void fillCollection(Node<K, V> root, Collection<Tree.Data<K, V>> data)
 	{
 		if(root == null) return;
-		fillDataList(root.m_left, list);
-		list.add(root.m_data);
-		fillDataList(root.m_right, list);
+		fillCollection(root.m_left, data);
+		data.add(root.m_data);
+		fillCollection(root.m_right, data);
 	}
 }

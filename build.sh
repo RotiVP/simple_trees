@@ -1,10 +1,19 @@
 #! /usr/bin/env bash
 
-# simpletrees
+#while [[ -n $1 ]]; do
+#	case $1 in
+#		GuiTester)
+#			;;
+#		*) 
+#			;;
+#	esac
+#	shift
+#done
 
-ELEMENTS=(model/FibTree example/CliTester)
+PROGS=(clitester/CliTester guitester/GuiTester)
 PROJECTPATH=src/rot/simpletrees
 
-for ELEMENT in ${ELEMENTS[@]}; do
-	javac -Xlint:unchecked -g -d bin -sourcepath src -classpath lib ${PROJECTPATH}/${ELEMENT}.java
+# 
+for PROG in ${PROGS[@]}; do
+	javac -g -Xlint:unchecked -d bin -sourcepath src -classpath lib ${PROJECTPATH}/${PROG}.java
 done 2>&1 | less

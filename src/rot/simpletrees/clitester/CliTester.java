@@ -1,12 +1,10 @@
-package rot.simpletrees.example;
+package rot.simpletrees.clitester;
 
 import rot.simpletrees.model.*;
 
 import java.util.Scanner;
 import java.util.Iterator;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
 
 public class CliTester {
 
@@ -33,6 +31,8 @@ public class CliTester {
 		+ "\n height       - print tree height"
 		+ "\n print        - print tree"
 		+ "\n list         - print data list"
+		+ "\n isft         - is fibonacci tree"
+		+ "\n resettft     - reset to fibonacci tree"
 		+ "\n quit         - exit tester";
 
 		String kph = "  "; //key place holder
@@ -125,6 +125,12 @@ public class CliTester {
 			else if ( cmd.matches("remove \\d{1,2}") ) {
 				Integer key = getKey(cmd);
 				tree.remove(key);
+			}
+
+			else if ( cmd.equals("isft") ) {
+				System.out.println(tree.isFT());
+			} else if (cmd.equals("resettft") ) {
+				System.out.println(tree.resetToFib());
 			}
 
 			else System.out.println(help);
