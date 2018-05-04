@@ -1,6 +1,7 @@
 package rot.simpletrees.guitester;
 
 import rot.simpletrees.guitester.ui.*;
+import rot.simpletrees.model.*;
 
 import javafx.application.Application;
 
@@ -12,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
+import javafx.scene.control.ScrollPane;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -23,16 +25,47 @@ import javafx.scene.control.ComboBox;
 import javafx.geometry.Pos;
 import javafx.geometry.Insets;
 
-public class GuiTester extends Application {
+import javafx.beans.property.SimpleIntegerProperty;
 
-	private static int counter;
+import java.lang.InterruptedException;
+import java.util.concurrent.ExecutionException;
+
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+
+import javafx.scene.paint.Color;
+
+//tmp
+import javafx.scene.shape.Circle;
+
+public class GuiTester extends Application {
 
 	private short utilWidth = 410;
 	private byte spnrMaxWidth = 100;
 
+	public static final SimpleIntegerProperty DELAY_PROP = new SimpleIntegerProperty();
+
 	@Override
 	public void start(Stage primaryStg) throws Exception
 	{
+
+		AVLTree<Integer, Color> fibTree = new FibTree<>();
+
+		fibTree.m_traverser = 
+			new Tree.Traverser<Integer, Color>()
+		{
+			@Override
+			public void selected(Tree.Data<Integer, Color> data) 
+			{
+				data.m_value = Color.WHITE;
+				try {
+					Thread.sleep(GuiTester.DELAY_PROP.getValue());
+				} catch (InterruptedException e) {}
+				data.m_value = Color.BLUE;
+			}
+		};
+
 //log
 		Label logTitle = new Label("Log");
 		logTitle.getStyleClass().add("label-bright");
@@ -53,18 +86,21 @@ public class GuiTester extends Application {
 //action
 		CheckBox autoFTChB = new CheckBox("Auto rebuild to Fibonacci tree");
 
-		Spinner<Integer> delaySpnr = new Spinner<>(0, 1000, 0, 10); //creating instance with value factory set
+		//creating instance with value factory set
+		Spinner<Integer> delaySpnr = new Spinner<>(0, 1000, 0, 10); 
 		delaySpnr.setEditable(true);
 		delaySpnr.setMaxWidth(spnrMaxWidth);
+		DELAY_PROP.bind(delaySpnr.valueProperty());
 
 		ComboBox<String> actionTypesCB = new ComboBox<>();
-		actionTypesCB.getItems().addAll("remove", "search", "insert", "rebuild");
+		actionTypesCB.getItems().setAll("remove", "search", "insert", "rebuild");
+		actionTypesCB.getSelectionModel().select(0);
 
 		Spinner<Integer> actionValueSpnr = new Spinner<>(1, 99, 1);
 		actionValueSpnr.setEditable(true);
 		actionValueSpnr.setMaxWidth(spnrMaxWidth);
 
-		Button startAction = new Button("Start");
+		Button startAction = new Button("Start");	
 	
 		//layout
 		GridPane actionPane = new GridPane();
@@ -90,14 +126,18 @@ public class GuiTester extends Application {
 		VBox.setVgrow(log, Priority.ALWAYS);
 
 //tree view (right)
-		VBox viewPane = new VBox(new Label("View"));
-		viewPane.setAlignment(Pos.TOP_LEFT);
+		TreeView treeView = new TreeView(fibTree);	
+
+		//VBox viewPane = new VBox(treeView);
+		//viewPane.setAlignment(Pos.TOP_LEFT);
+		ScrollPane viewPane = new ScrollPane();
+		viewPane.setContent(treeView);
 
 //status bar (bottom)
 		Label statusLbl = new Label("Status: ready");
 
 //layout setup
-		BorderPane root = new BorderPane(null, null, viewPane, statusLbl, utilPane);
+		BorderPane root = new BorderPane(viewPane, null, null, statusLbl, utilPane);
 		root.setPadding(new Insets(10));
 
 		Scene scene = new Scene(root);
@@ -108,6 +148,39 @@ public class GuiTester extends Application {
 		primaryStg.setTitle("GUI Tester");
 		primaryStg.setScene(scene);
 		primaryStg.show();
+
+//
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+
+		startAction.setOnAction( ae -> {
+
+			String actionType = actionTypesCB.getValue();
+			Integer actionValue = actionValueSpnr.getValue();
+
+			Future<?> actionStatus = executor.submit( () -> {
+
+				switch(actionType) {
+				case "insert":
+					fibTree.insert(new Tree.Data<Integer, Color>(actionValue, Color.WHITE));
+					break;
+				default:
+				}
+
+				treeView.updateView();
+			});
+
+			/*
+			executor.submit( () -> {
+				do {
+				} while(!actionStatus.isDone());
+
+				try{
+					actionStatus.get();
+				}catch( ExecutionException ee ) { 
+				}catch( InterruptedException ie) {}
+			});
+			*/
+		});
 	}
 
 	public static void main(String[] args)

@@ -1,0 +1,193 @@
+package rot.simpletrees.guitester.ui;
+import rot.simpletrees.model.*;
+
+import javafx.application.Platform;
+
+import javafx.scene.Group;
+
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Path;
+import javafx.scene.shape.LineTo;
+import javafx.scene.shape.MoveTo;
+
+import javafx.scene.paint.Color;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Iterator;
+
+import javafx.util.Duration;
+
+import javafx.animation.FadeTransition;
+import javafx.animation.PathTransition;
+
+public class TreeView extends Group {	
+
+	private AVLTree<Integer, Color> m_model = null;
+
+	private int radius = 40;
+	private Map<Integer, Circle> elements = new HashMap<>(0);
+
+	private AVLTree.DataLevelsList<Integer, Color> dataLevels = new AVLTree.DataLevelsList<>(0);
+
+	public TreeView(AVLTree<Integer, Color> model)
+	{
+		m_model = model;
+	}
+
+	public void updateView()
+	{
+		System.out.println("update");
+		Map<Integer, ElementInfo> changes = getChanges();
+
+		if(!changes.isEmpty())
+			Platform.runLater(() -> applyChanges(changes));
+	}
+
+
+	/*
+	private Map<Integer, ElementInfo> getChanges()
+	{
+		System.out.println("start getChanges");
+		Map<Integer, ElementInfo> changes = new HashMap<>(0);
+		
+		AVLTree.DataLevelsList<Integer, Color> newDataLevels = m_model.getDataLevels();
+		
+		int levels = newDataLevels.size();
+		int terms = (int) Math.pow(2, levels-1);
+
+		int row = 0, col = 0;
+		for(row = 0; row < newDataLevels.size(); ++row) {
+
+			int curLevel = row+1;
+			int indent = (int)( terms/Math.pow(2, curLevel-1) ) - 1;
+			int gap = indent*2+1;
+
+			for(col = 0; col < newDataLevels.get(row).size(); ++col) {
+				int y = row * radius*2;
+				//int x = (indent + gap*col + col) * radius*2;
+				int x = col * radius*2;
+
+				Tree.Data<Integer, Color> newElement = newDataLevels.get(row).get(col);
+
+				if(	row < dataLevels.size() ) {
+
+					Tree.Data<Integer, Color> element = dataLevels.get(row).get(col);
+					
+					setChange(changes, element, newElement, x, y);
+					
+					System.out.println("point0 getChanges");
+					continue;
+				}
+					
+				System.out.println("point12 getChanges");
+				
+				//расширился
+				setChange(changes, null, newElement, x, y);
+
+				System.out.println("point1 getChanges");
+			}
+			System.out.println("point2 getChanges");
+		}
+
+		//сузился
+		for( int i = row; i < dataLevels.size(); ++i)
+			for( int j = 0; j < dataLevels.get(i).size(); ++j ) {
+				Tree.Data<Integer, Color> element = dataLevels.get(row).get(col);
+				setChange(changes, element, null, null, null);
+			}
+
+		dataLevels = newDataLevels;
+		System.out.println("end getChanges");
+		return changes;
+	}
+	private void setChange(
+			Map<Integer, ElementInfo> changes,
+			Tree.Data<Integer, Color> element,
+			Tree.Data<Integer, Color> newElement,
+			Integer x,
+			Integer y)
+	{
+		if( newElement == null && element == null)
+			return;
+
+		if( newElement == null && element != null ) {
+			changes.put( element.m_key, new ElementInfo(null, y, x) );
+			
+		} else if ( newElement != null && element == null ) {
+			changes.put( newElement.m_key, new ElementInfo(newElement.m_value, y, x) );
+
+		} else if ( newElement.m_key != element.m_key ) {
+			changes.put( newElement.m_key, new ElementInfo(newElement.m_value, y, x) );
+			changes.put( element.m_key, new ElementInfo(null, y, x) );
+		}
+	}
+
+	private void applyChanges(Map<Integer, ElementInfo> changes)
+	{
+		Iterator<Map.Entry<Integer, ElementInfo>> chIt = changes.entrySet().iterator();
+
+		while(chIt.hasNext()) {
+			Map.Entry<Integer, ElementInfo> change = chIt.next();
+
+			Integer chKey = change.getKey();
+			ElementInfo newInfo = change.getValue();
+
+			Circle curElement = elements.get(chKey); //current element (without changes)
+			
+			if( curElement != null ) {
+				if(newInfo.m_color == null) {
+					FadeTransition ft = new FadeTransition(Duration.millis(2000), curElement);
+					ft.setToValue(0);
+					ft.setOnFinished( ae -> removeElement(chKey) );
+					ft.play();
+					System.out.println("remove");
+				} else {
+					//Path path = new Path();
+					//path.getElements().add( new MoveTo(newInfo.m_x, newInfo.m_y) );
+
+					//PathTransition pt = new PathTransition(Duration.millis(2000), path, curElement);
+					//pt.play();
+					curElement.setLayoutX(newInfo.m_x+10);	
+					curElement.setLayoutX(newInfo.m_y+10);
+					System.out.println("moved " + chKey);
+				}
+			} else {
+				Circle circle = addElement(chKey, newInfo);	
+				FadeTransition ft = new FadeTransition(Duration.millis(1000), circle);
+				ft.setToValue(100);
+				ft.play();
+			}
+		}
+		System.out.println("applyed");
+	}
+	private Circle addElement(Integer key, ElementInfo info) {
+		System.out.println(info.m_x + " " + info.m_y + " " + key);
+		Circle circle = new Circle(info.m_x, info.m_y, radius, Color.RED);
+		circle.setOpacity(0);
+		elements.put(key, circle);
+		getChildren().add(circle);
+		System.out.println("added " + key);
+		return circle;
+	}
+	private void removeElement(Integer key) {
+		Circle element = elements.get(key);
+		getChildren().remove(element);
+		elements.remove(key);
+		element = null;
+	}
+	*/
+}
+
+
+class ElementInfo {
+
+	public ElementInfo(Integer y, Integer x)
+	{
+		m_y = y;
+		m_x = x;
+	}
+
+	public Integer m_y;
+	public Integer m_x;
+}

@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class BinTree <K extends Comparable<K>, V>
-	implements Tree <K, V> {		
+	implements Tree <K, V> {
 
 // --- NODE STUFF ---
 	
-	static class Node<K extends Comparable<K>, V> {
-
-	public Node(Tree.Data<K, V> data)
+	static class Node<K extends Comparable<K>, V> 
+	{
+		public Node(Tree.Data<K, V> data)
 		{
 			m_data = data;
 		}
@@ -25,11 +25,7 @@ public class BinTree <K extends Comparable<K>, V>
 		return new Node<K, V>(data);
 	}
 
-// --- END NODE STUFF ---
-
-	static public class CallBack<K extends Comparable<K>, V> {
-		void action(Node<K, V> node) { }
-	}
+// --- END NODE STUFF ---	
 
 // --- CTORs ---
 
@@ -47,7 +43,12 @@ public class BinTree <K extends Comparable<K>, V>
 		if(root.m_right == null) return root;
 		return getMaximum(root.m_right);
 	}
-	protected Node<K, V> balance(Node<K, V> root) { return root; }
+	protected Node<K, V> balance(Node<K, V> root)
+	{ 
+		return root; 
+	}
+	
+	public Tree.Traverser<K, V> m_traverser = null;
 
 // --- USER INTERFACE ---
 	
@@ -57,6 +58,10 @@ public class BinTree <K extends Comparable<K>, V>
 	{
 		// рекурсивная реализация
 		if( root == null ) return root;
+
+		if(m_traverser != null) {
+			m_traverser.selected(root.m_data);
+		}
 
 		int compareResult = key.compareTo(root.m_data.m_key);
 
@@ -97,8 +102,12 @@ public class BinTree <K extends Comparable<K>, V>
 			++size;
 			return root;
 		}
+		if(m_traverser != null) {
+			m_traverser.selected(root.m_data);
+		}
 
 		int compareResult = data.m_key.compareTo(root.m_data.m_key);
+
 		if( compareResult > 0 )			root.m_right = insert(data, root.m_right);
 		else if( compareResult < 0 )	root.m_left = insert(data, root.m_left);
 		else							root.m_data.m_value = data.m_value;
@@ -118,6 +127,10 @@ public class BinTree <K extends Comparable<K>, V>
 	private Node<K, V> remove( K key, Node<K, V> root )
 	{
 		if( root == null ) return root;
+
+		if(m_traverser != null) {
+			m_traverser.selected(root.m_data);
+		}
 
 		int compareResult = key.compareTo(root.m_data.m_key);
 
@@ -147,30 +160,30 @@ public class BinTree <K extends Comparable<K>, V>
 
 // --- END REMOVE ---
 
-// --- TRAVERSE ---
+// --- TRAVERSE ---	
 
-	protected void inorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void inorderTraversal( Node<K, V> root, Tree.Traverser<K, V> tr)
 	{
 		if (root == null) return;
-		inorderTraversal(root.m_left, cb);
-		cb.action(root);
-		inorderTraversal(root.m_right, cb);
+		inorderTraversal(root.m_left, tr);
+		tr.selected(root.m_data);
+		inorderTraversal(root.m_right, tr);
 	}	
-	protected void preorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void preorderTraversal( Node<K, V> root, Tree.Traverser<K, V> tr)
 	{
 		if( root == null ) return;
 
-		cb.action(root);
-		preorderTraversal(root.m_left, cb);
-		preorderTraversal(root.m_right, cb);
+		tr.selected(root.m_data);
+		preorderTraversal(root.m_left, tr);
+		preorderTraversal(root.m_right, tr);
 	}
-	protected void postorderTraversal( Node<K, V> root, CallBack<K, V> cb)
+	protected void postorderTraversal( Node<K, V> root, Tree.Traverser<K, V> tr)
 	{
 		if( root == null ) return;
 
-		postorderTraversal(root.m_left, cb);
-		postorderTraversal(root.m_right, cb);
-		cb.action(root);
+		postorderTraversal(root.m_left, tr);
+		postorderTraversal(root.m_right, tr);
+		tr.selected(root.m_data);
 	}
 
 // --- END TRAVERSE ---

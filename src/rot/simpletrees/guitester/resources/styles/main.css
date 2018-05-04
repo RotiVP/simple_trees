@@ -125,3 +125,12 @@
 .text-field:hover, .text-field:focused {
 	-fx-border-color: #8f8f8f;
 }
+
+/*
+* {
+	-fx-border-width: 2px;
+	-fx-border-style: solid;
+	-fx-border-color: black;
+	-fx-background-color: white;
+}
+*/
