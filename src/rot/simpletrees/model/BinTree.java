@@ -102,9 +102,11 @@ public class BinTree <K extends Comparable<K>, V>
 			++size;
 			return root;
 		}
+		/*
 		if(m_traverser != null) {
 			m_traverser.selected(root.m_data);
 		}
+		*/
 
 		int compareResult = data.m_key.compareTo(root.m_data.m_key);
 
@@ -128,9 +130,11 @@ public class BinTree <K extends Comparable<K>, V>
 	{
 		if( root == null ) return root;
 
+		/*
 		if(m_traverser != null) {
 			m_traverser.selected(root.m_data);
 		}
+		*/
 
 		int compareResult = key.compareTo(root.m_data.m_key);
 

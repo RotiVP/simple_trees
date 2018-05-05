@@ -23,17 +23,20 @@ import javafx.scene.Node;
 import javafx.util.Duration;
 
 import javafx.animation.FadeTransition;
-import javafx.animation.TranslateTransition;
+import javafx.animation.FillTransition;
 
 public class TreeView extends /*Group*/ Pane {	
 
-	private AVLTree<Integer, Color> m_model = null;
+	private AVLTree<Integer, Integer> m_model = null;
 
+	private int originX = 10;
+	private int originY = 10;
 	private int elementRadius = 40;
-	private int fadeDur = 1000;
-	private int pathDur = 1000;
+	private int fadeDur = 500;
+	private int pathDur = 500;
+	private int fillDur = 500;
 
-	public TreeView(AVLTree<Integer, Color> model)
+	public TreeView(AVLTree<Integer, Integer> model)
 	{
 		m_model = model;
 	}
@@ -48,7 +51,7 @@ public class TreeView extends /*Group*/ Pane {
 	{
 		Map<Integer, ElementPos> state = new HashMap<>(0);
 		
-		AVLTree.DataLevelsList<Integer, Color> modelLevels = m_model.getDataLevels();
+		AVLTree.DataLevelsList<Integer, Integer> modelLevels = m_model.getDataLevels();
 		
 		int levels = modelLevels.size();
 		int terms = (int) Math.pow(2, levels-1);
@@ -61,12 +64,12 @@ public class TreeView extends /*Group*/ Pane {
 
 			for(int col = 0; col < modelLevels.get(row).size(); ++col) {
 
-				Tree.Data<Integer, Color> data = modelLevels.get(row).get(col);
+				Tree.Data<Integer, Integer> data = modelLevels.get(row).get(col);
 
 				if( data != null ) {
 					ElementPos pos = new ElementPos(
-							row * elementRadius*2,
-							col * elementRadius*2 );
+							originX + row * elementRadius*2,
+							originY + (col + gap*col + indent) * elementRadius*2 );
 					Integer key = modelLevels.get(row).get(col).m_key;
 					
 					state.put(key, pos);
@@ -112,6 +115,8 @@ public class TreeView extends /*Group*/ Pane {
 	{
 		//System.out.println(element.getLayoutX() + " " + element.getLayoutY() + " " + pos.m_x + " " + pos.m_y);
 
+		if(element.getLayoutX() == pos.m_x && element.getLayoutY() == pos.m_y) return;
+
 		Timeline tl = new Timeline();
 
         KeyFrame end = new KeyFrame(
@@ -145,6 +150,35 @@ public class TreeView extends /*Group*/ Pane {
 			getChildren().remove(element);
 			//element = null;
 		});
+		ft.play();
+	}
+
+	public void selectTouch(Integer key)
+	{
+		ObservableList<Node> nElements = getChildren();
+
+		for( Node nElement : nElements ) {
+
+			ViewElement element = (ViewElement) nElement;
+
+			Integer elementKey = element.getKey();
+
+			if( elementKey.compareTo(key) == 0 ) {
+
+				FillTransition circleAnim = new FillTransition(Duration.millis(fillDur), element.getCircle(), ViewElement.DEF_COLOR, Color.web("#00b4ef"));
+				circleAnim.setCycleCount(2);
+				circleAnim.setAutoReverse(true);
+
+				FillTransition textAnim = new FillTransition(Duration.millis(fillDur), element.getText(), Color.BLACK, Color.WHITE);
+				textAnim.setCycleCount(2);
+				textAnim.setAutoReverse(true);
+			 
+				circleAnim.play();
+				textAnim.play();
+
+				break;
+			}
+		}
 	}
 }
 
