@@ -49,23 +49,25 @@ public class CliTester {
 
 		System.out.printf("%s\n", welcome);
 
+		quit:
 		while(true) {
 			System.out.printf("%s", prompt);
 			String cmd = sc.nextLine().trim();
 
-			if(cmd.isEmpty()) continue;
+			switch(cmd){
 
-			if( cmd.equals("quit") ) break;
+			case "":
+				break;
 
-			else if( cmd.equals("help") )
+			case "quit":
+				break quit;
+
+			case "help":
 				System.out.printf("%s\n", help);
+				break;
 
-			else if( cmd.matches("insert \\d{1,2}") ) {
-				Integer key = getKey(cmd); 
-				tree.insert(new FibTree.Data<Integer, Integer>(key, 0));
-			}
+			case "print":
 
-			else if( cmd.equals("print") ) {
 				FibTree.DataLevelsList<Integer, Integer> dls = tree.getDataLevels(); //data levels
 				
 				int levels = dls.size(); // levels
@@ -86,7 +88,7 @@ public class CliTester {
 							for( int k = 0; k < gap; ++k)
 								System.out.print("  ");
 
-						FibTree.Data data = dls.get(i).get(j);
+						Tree.Data data = dls.get(i).get(j);
 						if(data != null) {
 							int key = ((Integer)data.m_key).intValue();
 							if(Math.ceil(Math.log10(key))<2)
@@ -97,45 +99,54 @@ public class CliTester {
 					}
 					System.out.println();
 				}
-			}
 
-			else if( cmd.equals("list") ) {
+				break;
+
+			case "list":
 				ArrayList<BinTree.Data<Integer, Integer>> list = tree.getDataList();
 				if( list.size() != 0) {
 					for(int i = 0; i < list.size(); ++i)
 						System.out.print(list.get(i).m_key + " ");	
 					System.out.println();
 				}
-			} 
-			
-			else if( cmd.equals("size") ) {
+				break;
+
+			case "size":
 				System.out.println(tree.size());
-			} else if( cmd.equals("height") ) {
+				break;
+
+			case "height":
 				System.out.println(tree.height());
-			}
+				break;
 
-			else if ( cmd.matches("search \\d{1,2}") ) {
-				Integer key = getKey(cmd);
-				BinTree.Data<Integer, Integer> result = tree.search(key);
-				if( result == null )
-					System.out.println("Not found");
-				else System.out.println("Is present");
-			}
-
-			else if ( cmd.matches("remove \\d{1,2}") ) {
-				Integer key = getKey(cmd);
-				tree.remove(key);
-			}
-
-			else if ( cmd.equals("isft") ) {
+			case "isft":
 				System.out.println(tree.isFT());
-			} else if (cmd.equals("resettft") ) {
+				break;
+
+			case "resettft":
 				System.out.println(tree.resetToFib());
+				break;
+
+			default:
+				if( cmd.matches("insert \\d{1,2}") ) {
+					Integer key = getKey(cmd); 
+					tree.insert(new Tree.Data<Integer, Integer>(key, 0));
+
+				} else if ( cmd.matches("search \\d{1,2}") ) {
+					Integer key = getKey(cmd);
+					Tree.Data<Integer, Integer> result = tree.search(key);
+					if( result == null )
+						System.out.println("Not found");
+					else System.out.println("Is present");
+
+				} else if ( cmd.matches("remove \\d{1,2}") ) {
+					Integer key = getKey(cmd);
+					tree.remove(key);
+				}
+
+				else System.out.println(help);
 			}
-
-			else System.out.println(help);
 		}
-
 		System.out.printf("%s\n", goodbye);
 	}
 }

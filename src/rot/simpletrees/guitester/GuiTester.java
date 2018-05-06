@@ -58,7 +58,7 @@ public class GuiTester extends Application {
 	public void start(Stage primaryStg) throws Exception
 	{
 
-		AVLTree<Integer, Integer> fibTree = new FibTree<>();	
+		FibTree<Integer, Integer> fibTree = new FibTree<>();	
 
 //log
 		Label logTitle = new Label("Log");
@@ -92,7 +92,7 @@ public class GuiTester extends Application {
 		DELAY_PROP.bind(delaySpnr.valueProperty());
 
 		ComboBox<String> actionTypesCB = new ComboBox<>();
-		actionTypesCB.getItems().setAll("remove", "search", "insert");
+		actionTypesCB.getItems().setAll("remove", "search", "insert", "flush");
 		actionTypesCB.getSelectionModel().select(0);
 
 		Spinner<Integer> actionValueSpnr = new Spinner<>(1, 99, 1);
@@ -127,18 +127,11 @@ public class GuiTester extends Application {
 //tree view (right)
 		TreeView treeView = new TreeView(fibTree);	
 
-		//VBox viewPane = new VBox(treeView);
-		//viewPane.setAlignment(Pos.TOP_LEFT);
-		ScrollPane viewPane = new ScrollPane();
-		//viewPane.setPadding(new Insets(10));
-		//viewPane.setHbarPolicy(ScrollBarPolicy.ALWAYS);
-		viewPane.setContent(treeView);
-
 //status bar (bottom)
 		Label statusLbl = new Label("Status: Ready");
 
 //layout setup
-		BorderPane root = new BorderPane(viewPane, null, null, statusLbl, utilPane);
+		BorderPane root = new BorderPane(treeView, null, null, statusLbl, utilPane);
 		root.setPadding(new Insets(10));
 
 		Scene scene = new Scene(root);
@@ -193,37 +186,73 @@ public class GuiTester extends Application {
 
 			String actionType = actionTypesCB.getValue();
 			Integer actionValue = actionValueSpnr.getValue();
+			boolean isRebuild = rebuildChB.isSelected();
 
+			// gui prepare
 			disableUI.setValue(true);
+
 			statusLbl.setText("Status: Processing .");
-			statusTl.play();
+			statusTl.play();	
 
 			Future<?> actionStatus = executor.submit( () -> {
+				
+				// time marks
+				long startTime, endTime;
+				startTime = System.nanoTime();
 
 				switch(actionType) {
+
 				case "insert":
 					fibTree.insert(new Tree.Data<Integer, Integer>(actionValue, 0));
+					if(isRebuild) {
+						fibTree.resetToFib();	
+					}
 					break;
+
 				case "remove":
 					fibTree.remove(actionValue);
+					if(isRebuild) {
+						fibTree.resetToFib();	
+					}
 					break;
+
 				case "search":
 					fibTree.search(actionValue);
+					break;
+
+				case "flush":
+					fibTree.flush();
+					break;
+
 				default:
 				}
+
+				endTime = System.nanoTime();
 
 				treeView.updateView();
 
 				Platform.runLater( () -> {
+
+					//final StringBuilder sb = new StringBuilder();
+					String format = "%s %s\n";
+
+					log.appendText(String.format(format, "Action:", actionType));
+					if( actionType.equals("insert") || actionType.equals("remove") ) {
+						log.appendText(String.format(format, "Value:", actionValue));
+						log.appendText(String.format(format, "Rebuild to FT:", isRebuild));
+					}
+					if( actionType.equals("search") )
+						log.appendText(String.format(format, "Delay:", delaySpnr.getValue() + " ms"));
+					if( !actionType.equals("flush") )
+						log.appendText(String.format(format, "Speed:", endTime - startTime + " ns"));
+
+					log.appendText("\n");
+
 					statusTl.stop();
 					statusLbl.setText("Status: Done");
 					disableUI.setValue(false);
-
-					log.appendText("Action: " + actionType + "\n");
 				});
 			});
-
-			
 
 			/*
 			executor.submit( () -> {

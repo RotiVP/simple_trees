@@ -23,7 +23,7 @@ class ViewElement extends StackPane {
 		m_key = key;
 
 		m_circle = new Circle(radius, DEF_COLOR);
-		System.out.println(m_circle.getLayoutX() + m_circle.getCenterX());
+		//System.out.println(m_circle.getLayoutX() + m_circle.getCenterX());
 
 		m_circle.setEffect(new DropShadow(10, 3, 3, Color.GRAY));
 

@@ -16,12 +16,13 @@ public class FibTree <K extends Comparable<K>, V>
 			? true
 			: false;
 		*/
+
+		// is fibonacci number
 		return isFibN(size()+1, 1);
-			
 	}
 	private int isFibN(int num, int index) {
 		int fibNum = getFN(index);
-		System.out.println("num: " + num + "fib: " + fibNum + "idx: " + index);
+
 		if (num == fibNum ) return index;
 		if (num < fibNum) return 0;
 		return isFibN(num, ++index);
@@ -38,25 +39,33 @@ public class FibTree <K extends Comparable<K>, V>
 		int index = ablFT();
 		if(index == 0) return false;
 
+		//save data
 		Queue<Tree.Data<K, V>> data = new ArrayDeque<>(size());
 		fillCollection(data);
 
 		System.out.println("building");
 		m_root = buildFib(m_root, index-2);
+
 		System.out.println("filling");
 		fillFib(m_root, data);
 
 		return true;
 	}
 	protected BinTree.Node<K, V> buildFib(BinTree.Node<K, V> node, int h) {
+
 		if( h == 0 ) return null;
-		if( h == 1 ) {
-			node = new AVLTree.Node<K, V>(null);
-			return node;
+
+		node = createNode(null);
+
+		AVLTree.Node avlNode = (AVLTree.Node) node;
+		avlNode.m_height = (byte)h;
+
+		if( h > 1 ) {
+			int itr = (Math.random() < 0.5) ? 1 : 0; //is tilt right
+			node.m_left = buildFib(node.m_left, h-1-itr);
+			node.m_right = buildFib(node.m_right, h-1-(1-itr));
 		}
-		int itr = (Math.random() < 0.5) ? 1 : 0; //is tilt right
-		node.m_left = buildFib(node.m_left, h-1-itr);
-		node.m_right = buildFib(node.m_right, h-1-(1-itr));
+		
 		return node;
 	}
 	protected void fillFib(BinTree.Node<K, V> node, Queue<Tree.Data<K, V>> data) {
@@ -72,14 +81,11 @@ public class FibTree <K extends Comparable<K>, V>
 	}
 	protected boolean isFT(BinTree.Node<K, V> node, boolean result)
 	{
-		//System.out.println("result - " + Boolean.toString(result)); 
-
-		if(result == false || getHeight(node) < 2) return result;
-
-		//System.out.println("data - " + node.m_data.m_key); 
+		if(result == false) return result;
+		if( getHeight(node) < 2 ) return true;
 
 		result = isFT(node.m_left, result);
-		if(getBalance(node) == 0) result = false;
+		if( Math.abs(getBalance(node)) != 1 ) result = false;
 		result = isFT(node.m_right, result);
 
 		return result;

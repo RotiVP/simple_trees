@@ -22,5 +22,6 @@ public interface Tree <K extends Comparable<K>, V> {
 	Data<K, V> search(K key);
 	void insert(Data<K, V> data);
 	void remove(K key);
+	void flush();
 	int size();
 }

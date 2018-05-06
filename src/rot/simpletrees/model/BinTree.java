@@ -51,6 +51,14 @@ public class BinTree <K extends Comparable<K>, V>
 	public Tree.Traverser<K, V> m_traverser = null;
 
 // --- USER INTERFACE ---
+
+// --- FLUSH ---
+
+	@Override
+	public void flush()
+	{
+		m_root = null;
+	}
 	
 // --- SEARCH --- 
 
